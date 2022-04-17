@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 
 # Adapted from https://gist.github.com/whiler/295113850bd55ed4f4bf898124abe4a8
 
@@ -8,6 +8,7 @@ import struct
 
 CTLIOCGINFO = 3227799043  # _IOWR('N', 3, struct ctl_info)
 CTL_INFO_FORMAT = "<I96s"  # little-endian uint32_t, then a char[96]
+UTUN_OPT_IFNAME = 2  # from net/if_utun.h
 
 
 def get_utun() -> socket.socket:
@@ -36,8 +37,19 @@ def get_utun() -> socket.socket:
     return utun_socket
 
 
+def utun_name(sock: socket.socket) -> bytes:
+    """
+    Get the name of a utun device.
+
+    :param sock: the socket controlling a utun device as returned from get_utun()
+    :return: the name of the utun device as a bytestring
+    """
+    return sock.getsockopt(socket.SYSPROTO_CONTROL, UTUN_OPT_IFNAME, 20)[:-1]  # take off the null terminator
+
+
 if __name__ == "__main__":
     utun = get_utun()
+    print(utun_name(utun))
     while True:
         # infinite loop to keep the interface open
         message = utun.recv(1500)
