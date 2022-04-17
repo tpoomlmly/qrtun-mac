@@ -11,47 +11,57 @@ CTL_INFO_FORMAT = "<I96s"  # little-endian uint32_t, then a char[96]
 UTUN_OPT_IFNAME = 2  # from net/if_utun.h
 
 
-def get_utun() -> socket.socket:
+class Utun(socket.socket):
     """
-    Create a utun device and get a socket connection to its controller.
+    A connection for controlling a utun device.
 
-    Anything sent via the newly created utun device is received on this socket.
-    Anything sent from this socket is received by those listening on the utun device.
-    This function will crash if not run on macOS, since PF_SYSTEM and SYSPROTO_CONTROL
-    only exist on macOS.
-
-    :return: a socket.socket() instance corresponding to a newly created utun adapter
+    Use send() and recv() to communicate with programs sending via this virtual NIC.
+    Anything sent via the utun device can be received for processing by calling recv().
+    Anything sent from this socket with send() is heard by those listening on the utun device.
     """
-    # Get file descriptor for socket
-    utun_socket = socket.socket(socket.PF_SYSTEM, socket.SOCK_DGRAM, socket.SYSPROTO_CONTROL)
 
-    # Make struct ctl_info
-    ctl_info = struct.pack(CTL_INFO_FORMAT, 0, "com.apple.net.utun_control".encode())
-    # Exchange controller name for ID + name
-    ctl_info = ioctl(utun_socket, CTLIOCGINFO, ctl_info)
-    controller_id, controller_name = struct.unpack(CTL_INFO_FORMAT, ctl_info)
+    def __init__(self, mtu: int = 1500) -> None:
+        """
+        Create a new utun device and a socket connection to its controller.
 
-    # Connect + activate (requires sudo)
-    utun_socket.connect((controller_id, 0))  # 0 means pick the next convenient number
+        Calling this requires root privileges. This function will crash if not run on macOS,
+        since PF_SYSTEM and SYSPROTO_CONTROL are only defined on Darwin.
 
-    return utun_socket
+        :param mtu: the Maximum Transmission Unit for the virtual interface
+        """
+        super().__init__(socket.PF_SYSTEM, socket.SOCK_DGRAM, socket.SYSPROTO_CONTROL)
 
+        self._mtu = mtu
 
-def utun_name(sock: socket.socket) -> bytes:
-    """
-    Get the name of a utun device.
+        # Make struct ctl_info
+        ctl_info = struct.pack(CTL_INFO_FORMAT, 0, "com.apple.net.utun_control".encode())
+        # Exchange controller name for ID + name
+        ctl_info = ioctl(self, CTLIOCGINFO, ctl_info)
+        controller_id, controller_name = struct.unpack(CTL_INFO_FORMAT, ctl_info)
 
-    :param sock: the socket controlling a utun device as returned from get_utun()
-    :return: the name of the utun device as a bytestring
-    """
-    return sock.getsockopt(socket.SYSPROTO_CONTROL, UTUN_OPT_IFNAME, 20)[:-1]  # take off the null terminator
+        # Connect + activate (requires sudo)
+        self.connect((controller_id, 0))  # 0 means pick the next convenient number
+
+    @property
+    def mtu(self) -> int:
+        """The Maximum Transmission Unit of this utun device."""
+        return self._mtu
+
+    @property
+    def name(self) -> bytes:
+        """
+        Get the name of a utun device.
+
+        :return: the name of the utun device as a bytestring
+        """
+        return self.getsockopt(socket.SYSPROTO_CONTROL, UTUN_OPT_IFNAME, 20)[:-1]  # take off the null terminator
 
 
 if __name__ == "__main__":
-    utun = get_utun()
-    print(utun_name(utun))
+    utun = Utun()
+    print(utun.name)
     while True:
         # infinite loop to keep the interface open
-        message = utun.recv(1500)
+        message = utun.recv()
         print(message)
         utun.send(message)
