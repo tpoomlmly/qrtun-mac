@@ -62,6 +62,6 @@ if __name__ == "__main__":
     print(utun.name)
     while True:
         # infinite loop to keep the interface open
-        message = utun.recv()
+        message = utun.recv(utun.mtu)
         print(message)
         utun.send(message)
