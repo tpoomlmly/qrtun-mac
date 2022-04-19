@@ -15,16 +15,22 @@ class QRDisplay:
         monitor_height = pygame.display.get_desktop_sizes()[0][1]
         surface_height = math.floor(monitor_height * 3/5)
         size = surface_height, surface_height
-        print(size)
-        background_colour = 255, 255, 255
-        surface = pygame.display.set_mode(size)
-        while 1:
+        self.surface = pygame.display.set_mode(size)
+
+        self.background_colour = 255, 255, 255
+        self.surface.fill(self.background_colour)
+
+        pygame.event.set_allowed(None)
+        pygame.event.set_allowed(pygame.QUIT)
+
+    def run_display_loop(self):
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
-            surface.fill(background_colour)
+            self.surface.fill(self.background_colour)
             pygame.display.flip()
 
 
 if __name__ == "__main__":
-    QRDisplay()
+    QRDisplay().run_display_loop()
