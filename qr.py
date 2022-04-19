@@ -23,7 +23,15 @@ class QRDisplay:
         pygame.event.set_allowed(None)
         pygame.event.set_allowed(pygame.QUIT)
 
-    def run_display_loop(self):
+    @property
+    def title(self) -> str:
+        return pygame.display.get_caption()[0]
+
+    @title.setter
+    def title(self, title) -> None:
+        pygame.display.set_caption(title, title)
+
+    def run_display_loop(self) -> None:
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -33,4 +41,7 @@ class QRDisplay:
 
 
 if __name__ == "__main__":
-    QRDisplay().run_display_loop()
+    screen = QRDisplay()
+    screen.title = "IP over QR"
+
+    screen.run_display_loop()
