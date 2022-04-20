@@ -1,5 +1,5 @@
+import io
 import math
-
 import pygame
 import qrcode
 import sys
@@ -23,6 +23,8 @@ class QRDisplay:
         pygame.event.set_allowed(None)
         pygame.event.set_allowed(pygame.QUIT)
 
+        self.qr_code = QRDisplay.make_qrcode(b"")
+
     @property
     def title(self) -> str:
         return pygame.display.get_caption()[0]
@@ -36,12 +38,32 @@ class QRDisplay:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
+
             self.surface.fill(self.background_colour)
+            qr_surface = pygame.image.load_basic(self.qr_code)
+            qr_rect = qr_surface.get_rect()
+            self.surface.blit(qr_surface, qr_rect)
+
             pygame.display.flip()
+
+    @staticmethod
+    def make_qrcode(data: bytes) -> io.BytesIO:
+        """
+        Make a QR code that can be displayed by pygame.
+
+        :param data: the data to put in the QR code
+        :return: a file-like BytesIO object containing a BMP of the QR code
+        """
+        qr_image = qrcode.make(data)
+        qr_bytes = io.BytesIO()
+        qr_image.save(qr_bytes, "BMP")
+        return qr_bytes
 
 
 if __name__ == "__main__":
     screen = QRDisplay()
     screen.title = "IP over QR"
+
+    print(QRDisplay.make_qrcode(b"hellooo").getvalue())
 
     screen.run_display_loop()
