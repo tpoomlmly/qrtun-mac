@@ -17,7 +17,6 @@ class QRDisplay:
         size = surface_height, surface_height
         self.surface = pygame.display.set_mode(size)
 
-        self.background_colour = 255, 255, 255
         self.surface.fill(self.background_colour)
 
         pygame.event.set_allowed(None)
@@ -26,12 +25,25 @@ class QRDisplay:
         self.qr_code = QRDisplay.make_qrcode(b"")
 
     @property
+    def background_colour(self) -> (int, int, int):
+        return 255, 255, 255
+
+    @property
     def title(self) -> str:
         return pygame.display.get_caption()[0]
 
     @title.setter
-    def title(self, title) -> None:
+    def title(self, title: str) -> None:
         pygame.display.set_caption(title, title)
+
+    def show_image(self, image_surface: pygame.Surface) -> None:
+        """
+        Display an image in the centre of the window.
+
+        :param image_surface: the image to display
+        """
+        image_rect = image_surface.get_rect()
+        self.surface.blit(image_surface, image_rect)
 
     def run_display_loop(self) -> None:
         while True:
@@ -40,14 +52,12 @@ class QRDisplay:
                     sys.exit()
 
             self.surface.fill(self.background_colour)
-            qr_surface = pygame.image.load_basic(self.qr_code)
-            qr_rect = qr_surface.get_rect()
-            self.surface.blit(qr_surface, qr_rect)
+            self.show_image(self.qr_code)
 
             pygame.display.flip()
 
     @staticmethod
-    def make_qrcode(data: bytes) -> io.BytesIO:
+    def make_qrcode(data: bytes) -> pygame.Surface:
         """
         Make a QR code that can be displayed by pygame.
 
@@ -56,14 +66,13 @@ class QRDisplay:
         """
         qr_image = qrcode.make(data)
         qr_bytes = io.BytesIO()
-        qr_image.save(qr_bytes, "BMP")
-        return qr_bytes
+        qr_image.save(qr_bytes, "PNG")
+        qr_bytes.seek(0)
+        return pygame.image.load(qr_bytes)
 
 
 if __name__ == "__main__":
     screen = QRDisplay()
     screen.title = "IP over QR"
-
-    print(QRDisplay.make_qrcode(b"hellooo").getvalue())
 
     screen.run_display_loop()
