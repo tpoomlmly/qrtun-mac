@@ -48,16 +48,20 @@ class QRDisplay:
         image_rect = image_surface.get_rect()
         self.surface.blit(image_surface, image_rect)
 
-    def run_display_loop(self) -> None:
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
+    def update_window(self) -> None:
+        """
+        Update the window where the QR code is displayed.
 
-            self.surface.fill(self.background_colour)
-            self.show_image(self.qr_code)
+        This should be run at least as often as the monitor's refresh rate.
+        """
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
 
-            pygame.display.flip()
+        self.surface.fill(self.background_colour)
+        self.show_image(self.qr_code)
+
+        pygame.display.flip()
 
     @staticmethod
     def make_qrcode(data: bytes) -> pygame.Surface:
@@ -104,11 +108,14 @@ class QRReader:
 
 
 if __name__ == "__main__":
-    reader = QRReader()
-    print(reader.read())
-    reader.finish()
-
     screen = QRDisplay()
     screen.title = "IP over QR"
+    reader = QRReader()
+    old_qr = None
 
-    screen.run_display_loop()
+    while True:
+        qr = reader.read()
+        if qr != old_qr:
+            print(qr)
+            old_qr = qr
+        screen.update_window()
