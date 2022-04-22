@@ -1,8 +1,11 @@
 import io
 import math
+import sys
+from typing import Optional
+
+import cv2
 import pygame
 import qrcode
-import sys
 
 
 class QRDisplay:
@@ -71,7 +74,40 @@ class QRDisplay:
         return pygame.image.load(qr_bytes)
 
 
+class QRReader:
+    """
+    A camera input that reads QR codes.
+
+    Uses the first camera it finds.
+    """
+
+    def __init__(self) -> None:
+        self.capture_device = cv2.VideoCapture(0)
+        self.detector = cv2.QRCodeDetector()
+
+    def read(self) -> Optional[bytes]:
+        """
+        Try to read a QR code from the camera.
+        """
+        success, frame = self.capture_device.read()
+        if not success:
+            raise OSError("Couldn't read from camera")
+
+        data, bounding_box, _ = self.detector.detectAndDecode(frame)
+        if bounding_box is None:
+            return None
+
+        return data
+
+    def finish(self) -> None:
+        self.capture_device.release()
+
+
 if __name__ == "__main__":
+    reader = QRReader()
+    print(reader.read())
+    reader.finish()
+
     screen = QRDisplay()
     screen.title = "IP over QR"
 
