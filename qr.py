@@ -17,8 +17,7 @@ class QRDisplay:
         pygame.init()
         monitor_height = pygame.display.get_desktop_sizes()[0][1]
         surface_height = math.floor(monitor_height * 3/5)
-        size = surface_height, surface_height
-        self.surface = pygame.display.set_mode(size)
+        self.surface = pygame.display.set_mode((surface_height, surface_height))
 
         self.surface.fill(self.background_colour)
 
@@ -45,7 +44,14 @@ class QRDisplay:
 
         :param image_surface: the image to display
         """
+        screen_width, screen_height = self.surface.get_size()
         image_rect = image_surface.get_rect()
+        image_rect.update(
+            screen_width / 2 - image_rect.width / 2,
+            screen_height / 2 - image_rect.height / 2,
+            image_rect.width,
+            image_rect.height,
+        )
         self.surface.blit(image_surface, image_rect)
 
     def update_window(self) -> None:
@@ -115,7 +121,7 @@ if __name__ == "__main__":
 
     while True:
         qr = reader.read()
-        if qr != old_qr:
+        if qr != old_qr and qr is not None and qr != b"":
             print(qr)
             old_qr = qr
         screen.update_window()
