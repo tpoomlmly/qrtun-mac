@@ -24,7 +24,12 @@ class QRDisplay:
         pygame.event.set_allowed(None)
         pygame.event.set_allowed(pygame.QUIT)
 
-        self.qr_code = QRDisplay.make_qrcode(b"")
+        self.qr_code = QRDisplay.make_qrcode(
+            b"ytryugiychgfxygiuhfrsrdfhtgyjhfdgfhgjkhuukgyftdrfgjyhkuiljugdfghjyuhkyfthdrgsdtfyguihyfthgyuhigyjfthdrtyg"
+            b"uihgthdrgfuihogyftiuopuytfuygiogyftdryftgiuhoytrtuioyftdrtuioiyitruoiytfytryugiychgfxygiuhfrsrdfhtgyjhfdg"
+            # b"fhgjkhuukgyftdrfgjyhkuiljugdfghjyuhkyfthdrgsdtfyguihyfthgyuhigyjfthdrtyguihgthdrgfuihogyftiuopuytfuygiogy"
+            # b"ftdryftgiuhoytrtuioyftdrtuioiyitruoiytfcfcgytrstrdfyjpojkjbkjdsgwnovbwjebnuewgoqbnbkjgqubjkcbkguebjksjkbb"
+        )
 
     @property
     def background_colour(self) -> (int, int, int):
