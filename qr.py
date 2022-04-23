@@ -103,11 +103,14 @@ class QRReader:
         if not success:
             raise OSError("Couldn't read from camera")
 
-        data, bounding_box, _ = self.detector.detectAndDecode(frame)
-        if bounding_box is None:
-            return None
+        try:
+            data, bounding_box, _ = self.detector.detectAndDecode(frame)
+            if bounding_box is None:
+                return None
+            return data
 
-        return data
+        except cv2.error:
+            return None
 
     def finish(self) -> None:
         self.capture_device.release()
