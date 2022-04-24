@@ -9,6 +9,7 @@ import struct
 CTLIOCGINFO = 3227799043  # _IOWR('N', 3, struct ctl_info)
 CTL_INFO_FORMAT = "<I96s"  # little-endian uint32_t, then a char[96]
 UTUN_OPT_IFNAME = 2  # from net/if_utun.h
+IF_NAMESIZE = 16  # from net/if.h
 
 
 class Utun(socket.socket):
@@ -55,6 +56,18 @@ class Utun(socket.socket):
         :return: the name of the utun device as a bytestring
         """
         return self.getsockopt(socket.SYSPROTO_CONTROL, UTUN_OPT_IFNAME, 20)[:-1]  # take off the null terminator
+
+    def add_ipv6(self, address: bytes) -> None:
+        """
+        Give this interface an IPv6 address.
+        :param address: the address to give
+        """
+
+    def delete_ipv6(self, address: bytes) -> None:
+        """
+        Delete one of this interface's IPv6 addresses.
+        :param address: the address to remove
+        """
 
 
 if __name__ == "__main__":
