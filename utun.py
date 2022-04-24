@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# Adapted from https://gist.github.com/whiler/295113850bd55ed4f4bf898124abe4a8
 
 import socket
 from fcntl import ioctl
