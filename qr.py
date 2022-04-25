@@ -13,11 +13,12 @@ class QRDisplay:
     A window that shows QR codes.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, title: str = "IP over QR") -> None:
         pygame.init()
         monitor_height = pygame.display.get_desktop_sizes()[0][1]
         surface_height = math.floor(monitor_height * 3/5)
         self.surface = pygame.display.set_mode((surface_height, surface_height))
+        self.title = title
 
         self.surface.fill(self.background_colour)
 
@@ -131,7 +132,6 @@ class QRReader:
 
 if __name__ == "__main__":
     screen = QRDisplay()
-    screen.title = "IP over QR"
     reader = QRReader()
     old_qr = None
 
