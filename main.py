@@ -1,28 +1,30 @@
 #!/usr/bin/env python3
 
-import asyncio
+import threading
 
 from qr import QRDisplay, QRReader
 from utun import Utun
 
 
-async def main():
+def main():
     utun = Utun()
     print(f"Interface name: {utun.name}")
     qr_display = QRDisplay()
     qr_reader = QRReader()
 
-    await asyncio.gather(
-        transmit_loop(utun, qr_display),
-        receive_loop(utun, qr_reader),
-    )
+    transmit_thread = threading.Thread(target=transmit_loop, args=(utun, qr_display))
+    receive_thread = threading.Thread(target=receive_loop, args=(utun, qr_reader))
+
+    transmit_thread.start()
+    receive_thread.start()
+    transmit_thread.join()
     # while True:
     #     message = utun.recv(utun.mtu)
     #     print(message)
     #     utun.send(message)
 
 
-async def transmit_loop(utun: Utun, qr_display: QRDisplay) -> None:
+def transmit_loop(utun: Utun, qr_display: QRDisplay) -> None:
     """
     Read data being sent into the utun device and display it as a QR code.
 
@@ -36,7 +38,7 @@ async def transmit_loop(utun: Utun, qr_display: QRDisplay) -> None:
         qr_display.show(message)
 
 
-async def receive_loop(utun: Utun, qr_reader: QRReader) -> None:
+def receive_loop(utun: Utun, qr_reader: QRReader) -> None:
     """
     Read QR codes and make the data in them appear on the utun device.
 
@@ -46,4 +48,4 @@ async def receive_loop(utun: Utun, qr_reader: QRReader) -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
