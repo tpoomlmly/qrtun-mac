@@ -2,6 +2,7 @@
 
 
 import socket
+import subprocess
 from fcntl import ioctl
 import struct
 
@@ -49,7 +50,7 @@ class Utun(socket.socket):
         self.connect((controller_id, 0))  # 0 means pick the next convenient number
 
         # Force-generate IPv6 address
-        self.add_ipv6(b"\xfe\x80" + b"\x00"*12 + b"\x11\x11")  # fe80::1111
+        subprocess.run(["ifconfig", self.name, "inet6", "fe80::1111"], check=True)
 
     @property
     def mtu(self) -> int:
@@ -68,26 +69,6 @@ class Utun(socket.socket):
             UTUN_OPT_IFNAME,
             IF_NAMESIZE,
         )[:-1]  # take off the null terminator
-
-    def add_ipv6(self, address: bytes) -> None:
-        """
-        Give this interface an IPv6 address.
-        :param address: the address to give
-        """
-        ifaliasreq = struct.pack(
-            IFALIASREQ_FORMAT,
-            self.name,
-            socket.AF_INET6, 0, 0, address, 0,
-            socket.AF_INET6, 0, 0, b"\x00"*16, 0,
-            socket.AF_INET6, 0, 0, b"\x00"*16, 0,
-        )
-        ioctl(self, SIOCAIFADDR, ifaliasreq)
-
-    def delete_ipv6(self, address: bytes) -> None:
-        """
-        Delete one of this interface's IPv6 addresses.
-        :param address: the address to remove
-        """
 
 
 if __name__ == "__main__":
