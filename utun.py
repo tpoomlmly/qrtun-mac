@@ -10,6 +10,12 @@ CTL_INFO_FORMAT = "<I96s"  # little-endian uint32_t, then a char[96]
 UTUN_OPT_IFNAME = 2  # from net/if_utun.h
 IF_NAMESIZE = 16  # from net/if.h
 
+SIOCAIFADDR = 2151704858  # _IOW('i', 26, struct ifaliasreq) 2166384921
+IN6_ADDR_FORMAT = "16s"  # 16-long unsigned char array
+SOCKADDR_IN6_FORMAT = f"HHI{IN6_ADDR_FORMAT}I"  # address family, port no., flow info, v6 address, scope ID
+# interface name, address, broadcast address, subnet mask
+IFALIASREQ_FORMAT = f"{IF_NAMESIZE}s{SOCKADDR_IN6_FORMAT}{SOCKADDR_IN6_FORMAT}{SOCKADDR_IN6_FORMAT}"
+
 
 class Utun(socket.socket):
     """
@@ -42,6 +48,9 @@ class Utun(socket.socket):
         # Connect + activate (requires sudo)
         self.connect((controller_id, 0))  # 0 means pick the next convenient number
 
+        # Force-generate IPv6 address
+        self.add_ipv6(b"\xfe\x80" + b"\x00"*12 + b"\x11\x11")  # fe80::1111
+
     @property
     def mtu(self) -> int:
         """The Maximum Transmission Unit of this utun device."""
@@ -54,13 +63,25 @@ class Utun(socket.socket):
 
         :return: the name of the utun device as a bytestring
         """
-        return self.getsockopt(socket.SYSPROTO_CONTROL, UTUN_OPT_IFNAME, 20)[:-1]  # take off the null terminator
+        return self.getsockopt(
+            socket.SYSPROTO_CONTROL,
+            UTUN_OPT_IFNAME,
+            IF_NAMESIZE,
+        )[:-1]  # take off the null terminator
 
     def add_ipv6(self, address: bytes) -> None:
         """
         Give this interface an IPv6 address.
         :param address: the address to give
         """
+        ifaliasreq = struct.pack(
+            IFALIASREQ_FORMAT,
+            self.name,
+            socket.AF_INET6, 0, 0, address, 0,
+            socket.AF_INET6, 0, 0, b"\x00"*16, 0,
+            socket.AF_INET6, 0, 0, b"\x00"*16, 0,
+        )
+        ioctl(self, SIOCAIFADDR, ifaliasreq)
 
     def delete_ipv6(self, address: bytes) -> None:
         """
