@@ -11,12 +11,6 @@ CTL_INFO_FORMAT = "<I96s"  # little-endian uint32_t, then a char[96]
 UTUN_OPT_IFNAME = 2  # from net/if_utun.h
 IF_NAMESIZE = 16  # from net/if.h
 
-SIOCAIFADDR = 2151704858  # _IOW('i', 26, struct ifaliasreq) 2166384921
-IN6_ADDR_FORMAT = "16s"  # 16-long unsigned char array
-SOCKADDR_IN6_FORMAT = f"HHI{IN6_ADDR_FORMAT}I"  # address family, port no., flow info, v6 address, scope ID
-# interface name, address, broadcast address, subnet mask
-IFALIASREQ_FORMAT = f"{IF_NAMESIZE}s{SOCKADDR_IN6_FORMAT}{SOCKADDR_IN6_FORMAT}{SOCKADDR_IN6_FORMAT}"
-
 
 class Utun(socket.socket):
     """
@@ -49,7 +43,7 @@ class Utun(socket.socket):
         # Connect + activate (requires sudo)
         self.connect((controller_id, 0))  # 0 means pick the next convenient number
 
-        # Force-generate IPv6 address
+        # Generate IPv6 address
         subprocess.run(["ifconfig", self.name, "inet6", "fe80::1111"], check=True)
 
     @property
