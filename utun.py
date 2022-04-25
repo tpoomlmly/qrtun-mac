@@ -44,7 +44,7 @@ class Utun(socket.socket):
         self.connect((controller_id, 0))  # 0 means pick the next convenient number
 
         # Generate IPv6 address
-        subprocess.run(["ifconfig", self.name, "inet6", "fe80::1111"], check=True)
+        subprocess.run(["ifconfig", self.name, "inet6", "fe80::1111", "mtu", str(mtu)], check=True)
 
     @property
     def mtu(self) -> int:
