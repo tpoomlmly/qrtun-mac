@@ -43,6 +43,14 @@ class QRDisplay:
     def title(self, title: str) -> None:
         pygame.display.set_caption(title, title)
 
+    def show(self, data: bytes) -> None:
+        """
+        Convert the specified data to a QR code and display it on the screen.
+
+        :param data: the data to show
+        """
+        self.show_image(QRDisplay.make_qrcode(data))
+
     def show_image(self, image_surface: pygame.Surface) -> None:
         """
         Display an image in the centre of the window.
