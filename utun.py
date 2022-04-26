@@ -21,13 +21,14 @@ class Utun(socket.socket):
     Anything sent from this socket with send() is heard by those listening on the utun device.
     """
 
-    def __init__(self, mtu: int = 1500) -> None:
+    def __init__(self, address: str = "fe80::1111", mtu: int = 1500) -> None:
         """
         Create a new utun device and a socket connection to its controller.
 
         Calling this requires root privileges. This function will crash if not run on macOS,
         since PF_SYSTEM and SYSPROTO_CONTROL are only defined on Darwin.
 
+        :param address: the IPv6 address that this device should have on the QR code link
         :param mtu: the Maximum Transmission Unit for the virtual interface
         """
         super().__init__(socket.PF_SYSTEM, socket.SOCK_DGRAM, socket.SYSPROTO_CONTROL)
@@ -44,7 +45,10 @@ class Utun(socket.socket):
         self.connect((controller_id, 0))  # 0 means pick the next convenient number
 
         # Generate IPv6 address
-        subprocess.run(["ifconfig", self.name, "inet6", "fe80::1111", "mtu", str(mtu)], check=True)
+        subprocess.run(["ifconfig", self.name, "inet6", address, "mtu", str(mtu)], check=True)
+
+        # Set as default route for IPv6 address
+        subprocess.run(["route", "add", "-inet6", "-net", "fe80::1111", "-interface", self.name], check=True)
 
     @property
     def mtu(self) -> int:
