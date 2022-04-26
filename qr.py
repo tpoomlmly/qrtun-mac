@@ -104,7 +104,7 @@ class QRReader:
         self.capture_device = cv2.VideoCapture(0)
         self.detector = cv2.QRCodeDetector()
 
-    def read(self) -> Optional[bytes]:
+    def read(self) -> Optional[str]:
         """
         Try to read a QR code from the camera.
         """
