@@ -25,12 +25,7 @@ class QRDisplay:
         pygame.event.set_allowed(None)
         pygame.event.set_allowed(pygame.QUIT)
 
-        self.qr_code = QRDisplay.make_qrcode(
-            b"ytryugiychgfxygiuhfrsrdfhtgyjhfdgfhgjkhuukgyftdrfgjyhkuiljugdfghjyuhkyfthdrgsdtfyguihyfthgyuhigyjfthdrtyg"
-            b"uihgthdrgfuihogyftiuopuytfuygiogyftdryftgiuhoytrtuioyftdrtuioiyitruoiytfytryugiychgfxygiuhfrsrdfhtgyjhfdg"
-            # b"fhgjkhuukgyftdrfgjyhkuiljugdfghjyuhkyfthdrgsdtfyguihyfthgyuhigyjfthdrtyguihgthdrgfuihogyftiuopuytfuygiogy"
-            # b"ftdryftgiuhoytrtuioyftdrtuioiyitruoiytfcfcgytrstrdfyjpojkjbkjdsgwnovbwjebnuewgoqbnbkjgqubjkcbkguebjksjkbb"
-        )
+        self.qr_code = QRDisplay.make_qrcode(b"")
 
     @property
     def background_colour(self) -> (int, int, int):
@@ -119,10 +114,10 @@ class QRReader:
 
         try:
             data, bounding_box, _ = self.detector.detectAndDecode(frame)
-            if bounding_box is None:
+            print(type(data))
+            if bounding_box is None or len(data) == 0:
                 return None
             return data
-
         except cv2.error:
             return None
 
