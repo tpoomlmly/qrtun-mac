@@ -114,7 +114,6 @@ class QRReader:
 
         try:
             data, bounding_box, _ = self.detector.detectAndDecode(frame)
-            print(type(data))
             if bounding_box is None or len(data) == 0:
                 return None
             return data

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import base64
 import threading
 
 from qr import QRDisplay, QRReader
@@ -29,9 +30,11 @@ def transmit_loop(utun: Utun, qr_display: QRDisplay) -> None:
     """
     while True:
         message = utun.recv(utun.mtu)
-        # print(message)
+        print(message)
+        message_encoded = base64.b32encode(message).replace(b'=', b':')
+        print(message_encoded)
         # utun.send(message)
-        qr_display.set_data(message)
+        qr_display.set_data(message_encoded)
 
 
 def receive_loop(utun: Utun) -> None:
@@ -50,7 +53,9 @@ def receive_loop(utun: Utun) -> None:
 
         old_data = data
         print(data)
-        utun.send(data)
+        data_decoded = base64.b32decode(data.replace(':', '='))
+        print(data_decoded)
+        utun.send(data_decoded)
 
 
 if __name__ == "__main__":
