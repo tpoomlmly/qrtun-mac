@@ -8,7 +8,7 @@ from utun import Utun
 
 
 def main():
-    utun = Utun()
+    utun = Utun(mtu=820)
     print(f"Interface name: {utun.name}")
     qr_display = QRDisplay()
 
