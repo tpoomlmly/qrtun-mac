@@ -86,7 +86,7 @@ class QRDisplay:
         :param data: the data to put in the QR code
         :return: a file-like BytesIO object containing a BMP of the QR code
         """
-        qr_image = qrcode.make(data)
+        qr_image = qrcode.make(data, box_size=5, border=2)
         qr_bytes = io.BytesIO()
         qr_image.save(qr_bytes, "PNG")
         qr_bytes.seek(0)
