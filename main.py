@@ -9,7 +9,7 @@ from utun import Utun
 
 def main():
     utun = Utun(mtu=820)
-    print(f"Interface name: {utun.name}")
+    print(f"Interface name: {utun.name.decode('utf-8')}")
     qr_display = QRDisplay()
 
     transmit_thread = threading.Thread(target=transmit_loop, args=(utun, qr_display), daemon=True)
